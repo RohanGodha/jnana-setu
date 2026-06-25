@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: #0f0e0b;
+  color: #f0ede6;
+  font-family: "Inter", system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Signature saffron-gold "infinite knowledge" line across the top on load. */
+.knowledge-line {
+  height: 2px;
+  transform-origin: left center;
+  background: linear-gradient(90deg, transparent, #c9923a 30%, #f0c987 50%, #c9923a 70%, transparent);
+}
+
+/* Thin scrollbars that match the manuscript palette. */
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-track {
+  background: #131210;
+}
+*::-webkit-scrollbar-thumb {
+  background: #2a2823;
+  border-radius: 6px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: #3a382f;
+}
+
+.prose-jain p {
+  margin-bottom: 0.85rem;
+  line-height: 1.7;
+}

@@ -1,0 +1,25 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      # Reuse the corpus already ingested on the host (vectors + BM25 snapshot).
+      # Serving queries needs only chroma_db + books.json (not the source files).
+      - ./backend/chroma_db:/app/chroma_db
+      - ./data:/data:ro # master books.json (read-only)
+    env_file:
+      - ./backend/.env
+    environment:
+      - CHROMA_PERSIST_PATH=/app/chroma_db
+      - BOOKS_JSON=/data/books.json
+      - CORS_ORIGINS=http://localhost:3000
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
