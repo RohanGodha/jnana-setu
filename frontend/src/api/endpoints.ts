@@ -1,9 +1,14 @@
 import { client } from "./client";
 import type {
+  AdminStats,
   AuthorSummary,
   BookDetail,
   BookList,
+  Bookmark,
   DailyReflectionData,
+  Payment,
+  PlanInfo,
+  UpiOrder,
   User,
 } from "../types";
 
@@ -55,5 +60,80 @@ export async function fetchAuthors(): Promise<AuthorSummary[]> {
 // --- Daily reflection -------------------------------------------------------
 export async function fetchDailyReflection(): Promise<DailyReflectionData> {
   const { data } = await client.post("/daily-reflection");
+  return data;
+}
+
+// --- Billing (UPI) ----------------------------------------------------------
+export async function fetchPlan(): Promise<PlanInfo> {
+  const { data } = await client.get("/billing/plan");
+  return data;
+}
+
+export async function createOrder(): Promise<UpiOrder> {
+  const { data } = await client.post("/billing/create-order", { plan: "pro" });
+  return data;
+}
+
+export async function submitPayment(payment_id: string, txn_ref: string) {
+  const { data } = await client.post("/billing/submit", { payment_id, txn_ref });
+  return data;
+}
+
+export async function myPayments(): Promise<{ payments: Payment[] }> {
+  const { data } = await client.get("/billing/my-payments");
+  return data;
+}
+
+// --- Bookmarks --------------------------------------------------------------
+export async function listBookmarks(): Promise<{ bookmarks: Bookmark[] }> {
+  const { data } = await client.get("/bookmarks");
+  return data;
+}
+
+export async function addBookmark(b: {
+  book_id?: string;
+  title: string;
+  author: string;
+  excerpt: string;
+  note?: string;
+}) {
+  const { data } = await client.post("/bookmarks", b);
+  return data;
+}
+
+export async function deleteBookmark(id: string) {
+  const { data } = await client.delete(`/bookmarks/${id}`);
+  return data;
+}
+
+// --- Stats / discovery ------------------------------------------------------
+export async function fetchStats() {
+  const { data } = await client.get("/stats");
+  return data;
+}
+
+export async function fetchSuggestions(): Promise<{ suggestions: string[] }> {
+  const { data } = await client.get("/suggestions");
+  return data;
+}
+
+// --- Admin ------------------------------------------------------------------
+export async function adminStats(): Promise<AdminStats> {
+  const { data } = await client.get("/admin/stats");
+  return data;
+}
+
+export async function adminPayments(status?: string): Promise<{ payments: Payment[] }> {
+  const { data } = await client.get("/admin/payments", { params: status ? { status } : {} });
+  return data;
+}
+
+export async function adminApprove(id: string) {
+  const { data } = await client.post(`/admin/payments/${id}/approve`);
+  return data;
+}
+
+export async function adminReject(id: string) {
+  const { data } = await client.post(`/admin/payments/${id}/reject`);
   return data;
 }

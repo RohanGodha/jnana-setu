@@ -27,12 +27,17 @@ export function NavBar() {
         <nav className="flex items-center gap-5">
           {link("/chat", "Chat")}
           {link("/books", "Library")}
+          {user && link("/bookmarks", "Saved")}
+          {user && !user.is_admin && !user.is_pro && link("/pro", "Upgrade")}
+          {user?.is_admin && link("/admin", "Admin")}
           {user ? (
             <div className="flex items-center gap-3">
               <span className="hidden text-xs text-text-secondary sm:inline">
-                {user.tier === "free"
-                  ? `${user.queries_today}/${user.daily_limit} today`
-                  : user.tier}
+                {user.is_admin
+                  ? "admin"
+                  : user.is_pro
+                  ? "Pro"
+                  : `${user.queries_today}/${user.daily_limit} today`}
               </span>
               <button
                 onClick={logout}

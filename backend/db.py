@@ -20,6 +20,9 @@ DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
 USE_PG = DATABASE_URL.startswith(("postgres://", "postgresql://"))
 if USE_PG:
     _PG_DSN = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+    # Render's external Postgres host requires SSL; add it if missing.
+    if "render.com" in _PG_DSN and "sslmode=" not in _PG_DSN:
+        _PG_DSN += ("&" if "?" in _PG_DSN else "?") + "sslmode=require"
 
 
 class _ConnProxy:
@@ -107,12 +110,20 @@ CREATE TABLE IF NOT EXISTS payments (
 
 @contextmanager
 def _conn():
+    global USE_PG
+    raw = None
     if USE_PG:
-        import psycopg
-        from psycopg.rows import dict_row
+        try:
+            import psycopg
+            from psycopg.rows import dict_row
 
-        raw = psycopg.connect(_PG_DSN, row_factory=dict_row)
-    else:
+            raw = psycopg.connect(_PG_DSN, row_factory=dict_row)
+        except Exception as exc:
+            # Never crash the app on a bad/unreachable DB URL: fall back to SQLite
+            # so the service stays up. Postgres activates once the URL is valid.
+            print(f"[db] Postgres unavailable ({exc}); falling back to SQLite.")
+            USE_PG = False
+    if raw is None:
         raw = sqlite3.connect(settings.user_db_path)
         raw.row_factory = sqlite3.Row
     conn = _ConnProxy(raw)
