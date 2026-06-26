@@ -6,6 +6,7 @@ ledger used for free-tier rate limiting.
 """
 from __future__ import annotations
 
+import os
 import secrets
 import sqlite3
 from contextlib import contextmanager
@@ -13,6 +14,39 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from config import settings
+
+# Use Postgres when DATABASE_URL is set (Render), else local SQLite.
+DATABASE_URL = os.getenv("DATABASE_URL", "").strip()
+USE_PG = DATABASE_URL.startswith(("postgres://", "postgresql://"))
+if USE_PG:
+    _PG_DSN = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+
+class _ConnProxy:
+    """Uniform connection: functions use ``?`` placeholders + ``conn.execute``;
+    for Postgres we translate ``?`` -> ``%s`` and split multi-statement scripts."""
+
+    def __init__(self, raw):
+        self.raw = raw
+
+    def execute(self, sql: str, params: tuple = ()):
+        if USE_PG:
+            sql = sql.replace("?", "%s")
+        return self.raw.execute(sql, params)
+
+    def executescript(self, script: str):
+        if USE_PG:
+            for stmt in script.split(";"):
+                if stmt.strip():
+                    self.raw.execute(stmt)
+        else:
+            self.raw.executescript(script)
+
+    def commit(self):
+        self.raw.commit()
+
+    def close(self):
+        self.raw.close()
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -73,8 +107,15 @@ CREATE TABLE IF NOT EXISTS payments (
 
 @contextmanager
 def _conn():
-    conn = sqlite3.connect(settings.user_db_path)
-    conn.row_factory = sqlite3.Row
+    if USE_PG:
+        import psycopg
+        from psycopg.rows import dict_row
+
+        raw = psycopg.connect(_PG_DSN, row_factory=dict_row)
+    else:
+        raw = sqlite3.connect(settings.user_db_path)
+        raw.row_factory = sqlite3.Row
+    conn = _ConnProxy(raw)
     try:
         yield conn
         conn.commit()
@@ -85,10 +126,13 @@ def _conn():
 def init_db() -> None:
     with _conn() as conn:
         conn.executescript(_SCHEMA)
-        # Lightweight migration: add pro_until to existing users tables.
-        cols = {r["name"] for r in conn.execute("PRAGMA table_info(users)").fetchall()}
-        if "pro_until" not in cols:
-            conn.execute("ALTER TABLE users ADD COLUMN pro_until TEXT")
+        # Migration: add pro_until to existing users tables (dialect-aware).
+        if USE_PG:
+            conn.execute("ALTER TABLE users ADD COLUMN IF NOT EXISTS pro_until TEXT")
+        else:
+            cols = {r["name"] for r in conn.execute("PRAGMA table_info(users)").fetchall()}
+            if "pro_until" not in cols:
+                conn.execute("ALTER TABLE users ADD COLUMN pro_until TEXT")
 
 
 def _now_iso() -> str:

@@ -32,3 +32,23 @@ services:
         value: "3"
       - key: CORS_ORIGINS
         sync: false          # set to your Vercel URL after frontend deploy
+      # Persistent database (free Postgres) so users/payments survive redeploys.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: jnana-db
+          property: connectionString
+      # Admin + UPI monetization.
+      - key: ADMIN_EMAIL
+        sync: false          # your email -> full/free/unlimited access
+      - key: UPI_VPA
+        sync: false          # your UPI ID to receive payments
+      - key: UPI_PAYEE_NAME
+        value: Jnana Setu
+      - key: PRO_PRICE_INR
+        value: "199"
+      - key: PRO_DAYS
+        value: "30"
+
+databases:
+  - name: jnana-db
+    plan: free

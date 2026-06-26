@@ -10,6 +10,7 @@ sse-starlette>=2.1
 python-jose[cryptography]>=3.3
 bcrypt>=4.1
 email-validator>=2.0   # required by pydantic EmailStr in models.py
+psycopg[binary]>=3.1   # Postgres (Render); SQLite used locally
 
 # --- Rate limiting ---
 slowapi>=0.1.9
