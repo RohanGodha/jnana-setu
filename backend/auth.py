@@ -83,24 +83,49 @@ def current_user(
     return user
 
 
+def is_admin(user: dict) -> bool:
+    admin = (settings.admin_email or "").strip().lower()
+    return bool(admin) and user.get("email", "").lower() == admin
+
+
+def has_unlimited(user: dict) -> bool:
+    """Admins and users with an active Pro subscription have unlimited access."""
+    return is_admin(user) or db.pro_active(user)
+
+
 def daily_limit_for(tier: str) -> int:
     return TIER_DAILY_LIMITS.get(tier, settings.free_tier_daily_limit)
 
 
+def effective_limit(user: dict) -> int:
+    if has_unlimited(user):
+        return 1_000_000
+    return daily_limit_for(user["tier"])
+
+
+def require_admin(user: dict = Depends(current_user)) -> dict:
+    if not is_admin(user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin only")
+    return user
+
+
 def enforce_query_limit(user: dict) -> None:
-    """Raise 429 if a free-tier user has hit the daily quota."""
+    """Raise 429 if a free-tier user has hit the daily quota. Admins and active
+    Pro users bypass the limit entirely."""
+    if has_unlimited(user):
+        return
     limit = daily_limit_for(user["tier"])
     used = db.queries_today(user["id"])
     if used >= limit:
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
-            detail="Daily limit reached. Upgrade for unlimited access.",
+            detail="Daily limit reached. Upgrade to Pro for unlimited access.",
         )
 
 
 def enforce_hindi_access(user: dict, language: str) -> None:
-    if language == "hi" and user["tier"] == "free":
+    if language == "hi" and user["tier"] == "free" and not has_unlimited(user):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Hindi responses require Premium.",
+            detail="Hindi responses require Pro.",
         )

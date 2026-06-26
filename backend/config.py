@@ -92,6 +92,13 @@ class Settings(BaseSettings):
     # --- Tiers ---
     free_tier_daily_limit: int = 3
 
+    # --- Admin + monetization (UPI) ---
+    admin_email: str = ""            # this account gets full/free/unlimited access
+    upi_vpa: str = ""                # your UPI ID to receive payments (e.g. name@okhdfcbank)
+    upi_payee_name: str = "Jnana Setu"
+    pro_price_inr: int = 199         # price of the Pro plan
+    pro_days: int = 30               # Pro validity per payment
+
     # --- Storage ---
     user_db_path: str = str(BASE_DIR / "jnana_setu.db")
     books_json: str = str(BASE_DIR.parent / "data" / "books.json")

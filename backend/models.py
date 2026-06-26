@@ -41,6 +41,9 @@ class MeResponse(BaseModel):
     tier: str
     queries_today: int
     daily_limit: int
+    is_admin: bool = False
+    is_pro: bool = False
+    pro_until: Optional[str] = None
 
 
 # --- Query ------------------------------------------------------------------
@@ -117,6 +120,32 @@ class DailyReflection(BaseModel):
     reflection: str = ""
     source: DailySource
     generated_at: datetime
+
+
+# --- Bookmarks / feedback / billing ----------------------------------------
+
+
+class BookmarkCreate(BaseModel):
+    book_id: str = Field(default="", max_length=80)
+    title: str = Field(min_length=1, max_length=300)
+    author: str = Field(default="Unknown", max_length=300)
+    excerpt: str = Field(default="", max_length=4000)
+    note: str = Field(default="", max_length=1000)
+
+
+class FeedbackCreate(BaseModel):
+    query: str = Field(default="", max_length=2000)
+    rating: int = Field(ge=-1, le=1)   # -1 down, +1 up
+    comment: str = Field(default="", max_length=1000)
+
+
+class CreateOrderRequest(BaseModel):
+    plan: Literal["pro"] = "pro"
+
+
+class SubmitPaymentRequest(BaseModel):
+    payment_id: str = Field(min_length=3, max_length=80)
+    txn_ref: str = Field(min_length=3, max_length=120)
 
 
 # --- Health -----------------------------------------------------------------
