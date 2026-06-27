@@ -155,4 +155,5 @@ class HealthResponse(BaseModel):
     status: str
     chroma: str
     anthropic: str
+    db: str = "sqlite"
     version: str

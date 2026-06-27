@@ -374,5 +374,6 @@ def health():
         status="ok",
         chroma=get_retriever().health(),
         anthropic="mock" if settings.mock_mode else "configured",
+        db="postgres" if db.USE_PG else "sqlite",
         version=VERSION,
     )
