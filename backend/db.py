@@ -198,9 +198,12 @@ def queries_today(user_id: str) -> int:
 def increment_queries(user_id: str) -> int:
     day = _today()
     with _conn() as conn:
+        # Qualify the column: bare ``count`` is ambiguous in Postgres' ON
+        # CONFLICT DO UPDATE (target vs EXCLUDED). ``query_log.count`` works in
+        # both SQLite and Postgres.
         conn.execute(
             "INSERT INTO query_log (user_id, day, count) VALUES (?, ?, 1) "
-            "ON CONFLICT(user_id, day) DO UPDATE SET count = count + 1",
+            "ON CONFLICT(user_id, day) DO UPDATE SET count = query_log.count + 1",
             (user_id, day),
         )
         row = conn.execute(
