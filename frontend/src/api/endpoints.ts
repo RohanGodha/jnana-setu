@@ -117,6 +117,33 @@ export async function fetchSuggestions(): Promise<{ suggestions: string[] }> {
   return data;
 }
 
+export async function fetchTrending(): Promise<{ trending: { query: string; count: number }[] }> {
+  const { data } = await client.get("/trending");
+  return data;
+}
+
+export async function fetchRandomSutra(): Promise<{
+  book_id: string;
+  title: string;
+  author: string;
+  anuyoga: string;
+  excerpt: string;
+}> {
+  const { data } = await client.get("/random-sutra");
+  return data;
+}
+
+export interface GlossaryTerm {
+  term: string;
+  hindi: string;
+  meaning: string;
+}
+
+export async function fetchGlossary(q = ""): Promise<{ terms: GlossaryTerm[] }> {
+  const { data } = await client.get("/glossary", { params: q ? { q } : {} });
+  return data;
+}
+
 // --- Admin ------------------------------------------------------------------
 export async function adminStats(): Promise<AdminStats> {
   const { data } = await client.get("/admin/stats");

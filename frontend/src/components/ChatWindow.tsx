@@ -1,9 +1,28 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Send, Loader2 } from "lucide-react";
+import { Send, Loader2, Download } from "lucide-react";
 import { useChatStore } from "../store/chatStore";
 import { useSSE } from "../hooks/useSSE";
-import type { Citation } from "../types";
+import type { Citation, Message as Msg } from "../types";
 import { Message } from "./Message";
+
+function exportMarkdown(messages: Msg[]) {
+  const lines: string[] = ["# Jnana Setu — Conversation", ""];
+  for (const m of messages) {
+    lines.push(m.role === "user" ? `**You:** ${m.content}` : `**Jnana Setu:** ${m.content}`);
+    if (m.citations?.length) {
+      lines.push("", "_Sources:_");
+      for (const c of m.citations) lines.push(`- ${c.title} — ${c.author}`);
+    }
+    lines.push("");
+  }
+  const blob = new Blob([lines.join("\n")], { type: "text/markdown" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `jnana-setu-${new Date().toISOString().slice(0, 10)}.md`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
 
 const SUGGESTIONS = [
   "I can't stop feeling angry at someone who hurt me. How do I let go?",
@@ -88,8 +107,8 @@ export function ChatWindow({ initialQuery }: { initialQuery?: string }) {
             </h2>
             <p className="mt-2 text-text-secondary">
               Pose a scholarly question or bring a real struggle. Jnana Setu listens,
-              then guides you through the wisdom of 600 Digambar Jain texts — citing
-              every source.
+              then guides you through the wisdom of 1,300+ Digambar Jain texts —
+              citing every source.
             </p>
             <div className="mt-6 grid gap-2 sm:grid-cols-2">
               {SUGGESTIONS.map((s) => (
@@ -105,6 +124,14 @@ export function ChatWindow({ initialQuery }: { initialQuery?: string }) {
           </div>
         ) : (
           <div className="mx-auto max-w-3xl space-y-6">
+            <div className="flex justify-end">
+              <button
+                onClick={() => exportMarkdown(messages)}
+                className="flex items-center gap-1.5 rounded-lg border border-white/10 px-3 py-1.5 text-xs text-text-secondary hover:text-text-primary"
+              >
+                <Download className="h-3.5 w-3.5" /> Export
+              </button>
+            </div>
             {messages.map((m) => (
               <Message key={m.id} message={m} />
             ))}

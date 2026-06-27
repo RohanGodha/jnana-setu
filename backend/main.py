@@ -250,6 +250,12 @@ def trending():
     return {"trending": db.popular_queries(10)}
 
 
+@app.get("/glossary")
+def glossary(q: str = ""):
+    import glossary as g
+    return {"terms": g.search_terms(q) if q else g.all_terms()}
+
+
 # --- Bookmarks --------------------------------------------------------------
 @app.post("/bookmarks", status_code=201)
 def add_bookmark(body: BookmarkCreate, user: dict = Depends(auth.current_user)):

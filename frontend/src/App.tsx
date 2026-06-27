@@ -7,6 +7,8 @@ import { Login } from "./pages/Login";
 import { Pro } from "./pages/Pro";
 import { Bookmarks } from "./pages/Bookmarks";
 import { Admin } from "./pages/Admin";
+import { Explore } from "./pages/Explore";
+import { Glossary } from "./pages/Glossary";
 
 const queryClient = new QueryClient();
 
@@ -22,6 +24,8 @@ export default function App() {
           <Route path="/pro" element={<Pro />} />
           <Route path="/bookmarks" element={<Bookmarks />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/explore" element={<Explore />} />
+          <Route path="/glossary" element={<Glossary />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>

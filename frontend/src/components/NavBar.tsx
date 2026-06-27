@@ -26,7 +26,9 @@ export function NavBar() {
 
         <nav className="flex items-center gap-5">
           {link("/chat", "Chat")}
+          {link("/explore", "Explore")}
           {link("/books", "Library")}
+          {link("/glossary", "Glossary")}
           {user && link("/bookmarks", "Saved")}
           {user && !user.is_admin && !user.is_pro && link("/pro", "Upgrade")}
           {user?.is_admin && link("/admin", "Admin")}
