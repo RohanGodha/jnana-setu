@@ -15,9 +15,9 @@ sse-starlette>=2.1
 python-jose[cryptography]>=3.3
 bcrypt>=4.1
 email-validator>=2.0   # required by pydantic EmailStr in models.py
-
-# --- Persistent DB (Render Postgres via DATABASE_URL); SQLite used locally ---
-psycopg[binary]>=3.1
+# NOTE: to enable Postgres, add `psycopg[binary]>=3.1` here AND set a working
+# DATABASE_URL (External Render URL). Removed temporarily as it was breaking the
+# Render build; db.py falls back to SQLite gracefully when psycopg is absent.
 
 # --- Rate limiting ---
 slowapi>=0.1.9
