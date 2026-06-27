@@ -4,6 +4,7 @@ import type {
   AuthorSummary,
   BookDetail,
   BookList,
+  BookSummary,
   Bookmark,
   DailyReflectionData,
   Payment,
@@ -48,6 +49,25 @@ export async function fetchBooks(params: BookQuery = {}): Promise<BookList> {
 
 export async function fetchBook(id: string): Promise<BookDetail> {
   const { data } = await client.get(`/books/${id}`);
+  return data;
+}
+
+export async function fetchBookPassages(
+  id: string
+): Promise<{ passages: { chapter: string; excerpt: string }[] }> {
+  const { data } = await client.get(`/books/${id}/passages`, { params: { limit: 6 } });
+  return data;
+}
+
+export async function fetchRelatedBooks(id: string): Promise<{ related: BookSummary[] }> {
+  const { data } = await client.get(`/books/${id}/related`, { params: { limit: 6 } });
+  return data;
+}
+
+export async function searchPassages(
+  q: string
+): Promise<{ results: { book_id: string; title: string; author: string; anuyoga: string; chapter: string; excerpt: string }[] }> {
+  const { data } = await client.get("/search", { params: { q, limit: 10 } });
   return data;
 }
 

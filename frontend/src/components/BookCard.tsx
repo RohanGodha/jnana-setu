@@ -1,9 +1,13 @@
+import { Link } from "react-router-dom";
 import type { BookSummary } from "../types";
 import { AnuyogaBadge } from "./AnuyogaBadge";
 
 export function BookCard({ book }: { book: BookSummary }) {
   return (
-    <div className="flex flex-col gap-2 rounded-xl border border-white/5 bg-surface/60 p-4 transition hover:border-accent/30">
+    <Link
+      to={`/books/${book.id}`}
+      className="flex flex-col gap-2 rounded-xl border border-white/5 bg-surface/60 p-4 transition hover:border-accent/30"
+    >
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-display text-lg leading-tight text-text-primary">
           {book.title}
@@ -27,6 +31,6 @@ export function BookCard({ book }: { book: BookSummary }) {
           {book.total_chunks.toLocaleString()} indexed passages
         </div>
       )}
-    </div>
+    </Link>
   );
 }

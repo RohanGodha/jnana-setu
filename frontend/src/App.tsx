@@ -9,6 +9,8 @@ import { Bookmarks } from "./pages/Bookmarks";
 import { Admin } from "./pages/Admin";
 import { Explore } from "./pages/Explore";
 import { Glossary } from "./pages/Glossary";
+import { BookDetail } from "./pages/BookDetail";
+import { Search } from "./pages/Search";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +22,8 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/chat" element={<Chat />} />
           <Route path="/books" element={<Books />} />
+          <Route path="/books/:id" element={<BookDetail />} />
+          <Route path="/search" element={<Search />} />
           <Route path="/login" element={<Login />} />
           <Route path="/pro" element={<Pro />} />
           <Route path="/bookmarks" element={<Bookmarks />} />

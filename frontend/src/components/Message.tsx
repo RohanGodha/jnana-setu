@@ -1,9 +1,19 @@
-import { Sparkles, User as UserIcon } from "lucide-react";
+import { useState } from "react";
+import { Sparkles, User as UserIcon, Copy, Check } from "lucide-react";
 import type { Message as MessageType } from "../types";
 import { CitationCard } from "./CitationCard";
 
 export function Message({ message }: { message: MessageType }) {
   const isUser = message.role === "user";
+  const [copied, setCopied] = useState(false);
+
+  const copy = () => {
+    navigator.clipboard?.writeText(message.content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    });
+  };
+
   return (
     <div className="animate-fade-in flex gap-3">
       <div
@@ -18,8 +28,13 @@ export function Message({ message }: { message: MessageType }) {
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <div className="mb-1 text-xs font-medium text-text-secondary">
+        <div className="mb-1 flex items-center gap-2 text-xs font-medium text-text-secondary">
           {isUser ? "You" : "Jnana Setu"}
+          {!isUser && !message.streaming && message.content && (
+            <button onClick={copy} className="hover:text-accent" title="Copy answer">
+              {copied ? <Check className="h-3 w-3 text-green-400" /> : <Copy className="h-3 w-3" />}
+            </button>
+          )}
         </div>
         <div
           className={`prose-jain whitespace-pre-wrap text-[15px] leading-relaxed ${
